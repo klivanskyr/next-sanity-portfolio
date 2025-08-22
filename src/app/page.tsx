@@ -1,103 +1,183 @@
-import Image from "next/image";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import {sanityClient} from '@/lib/sanity.client'
+import {groq} from 'next-sanity'
+import Image from 'next/image'
+import {urlFor} from '@/lib/sanity.image'
+import ProjectSearch from '@/components/ProjectSearch'
+import ContactForm from '@/components/ContactForm'
+import {Card, CardContent} from '@/components/ui/card'
+import PrettyString from '@/components/PrettyString'
+import ScrollingWords from '@/components/ScrollingWords'
 
-export default function Home() {
+export const revalidate = 300; // ISR every 5 min
+
+type Project = {
+  _id: string
+  title: string
+  desciption?: string
+  image?: any
+  url: string
+  github?: string
+  featured?: boolean
+}
+
+type Profile = {
+  name: string
+  role: string
+  adjectives?: string[]
+  shortBio?: string
+  bio?: string
+  profileImage?: any
+  email?: string
+  resume?: { asset: { url: string } }
+  linkedIn?: string
+  github?: string
+}
+
+// type WorkExperience = {
+//   _id: string
+//   jobTitle: string
+//   company: string
+//   startDate: string
+//   endDate?: string
+//   location?: string
+//   isCurrent?: boolean
+//   url?: string
+//   logo?: any
+//   highlights?: string[]
+//   description?: string
+// }
+
+// type Education = {
+//   _id: string
+//   institution: string
+//   degree: string
+//   startDate: string
+//   endDate?: string
+//   url?: string
+//   highlights?: string[]
+// }
+
+// type ResearchExperience = {
+//   _id: string
+//   title: string
+//   institution: string
+//   startDate: string
+//   endDate?: string
+//   url?: string
+//   highlights?: string[]
+// }
+
+type Technology = {
+  _id: string
+  name: string
+  icon?: any
+}
+
+type ProjectWithTechNames = Project & { tech?: string[] }
+
+async function getProjects(): Promise<Project[]> {
+  const q = groq`*[_type == "project"]|order(publishedAt desc){
+    _id, title, slug, excerpt, heroImage, tech, publishedAt
+  }`
+  // tag: 'projects' lets us trigger revalidateTag('projects') from a webhook
+  return sanityClient.fetch(q, {}, {next: {tags: ['projects']}})
+}
+
+// async function getWorkExperiences(): Promise<WorkExperience[]> {
+//   const q = groq`*[_type == "workExperience"]|order(startDate desc){
+//     _id, jobTitle, company, startDate, endDate, location, isCurrent, url, logo, highlights, description
+//   }`
+//   return sanityClient.fetch(q, {}, {next: {tags: ['workExperiences']}})
+// }
+
+// async function getEducation(): Promise<Education[]> {
+//   const q = groq`*[_type == "education"]|order(startDate desc){
+//     _id, institution, degree, startDate, endDate, url, highlights
+//   }`
+//   return sanityClient.fetch(q, {}, {next: {tags: ['education']}})
+// }
+
+// async function getResearchExperiences(): Promise<ResearchExperience[]> {
+//   const q = groq`*[_type == "researchExperience"]|order(startDate desc){
+//     _id, title, institution, startDate, endDate, url, highlights
+//   }`
+//   return sanityClient.fetch(q, {}, {next: {tags: ['researchExperiences']}})
+// }
+
+async function getProfile(): Promise<Profile> {
+  const q = groq`*[_type == "profile"][0]{
+    name, role, adjectives, shortBio, bio, profileImage, email, resume, linkedIn, github
+  }`
+  return sanityClient.fetch(q, {}, {next: {tags: ['profile']}})
+}
+
+// async function getTechnologies(): Promise<Technology[]> {
+//   const q = groq`*[_type == "technology"]{
+//     _id, name, icon
+//   }`
+//   return sanityClient.fetch(q, {}, {next: {tags: ['technologies']}})
+// }
+
+// async function getProjectsWithTech(): Promise<ProjectWithTechNames[]> {
+//   const projects = await getProjects()
+//   const technologies = await getTechnologies()
+//   const techMap = new Map(technologies.map(t => [t._id, t.name]))
+//   return projects.map(p => ({
+//     ...p,
+//     tech: p.tech?.map(tid => techMap.get(tid)).filter(Boolean) as string[] | undefined,
+//   }))
+// }
+
+export default async function Home() {
+  const projects = await getProjects()
+  const profile = await getProfile()
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <main className="container mx-auto px-4 py-10 space-y-8">
+      <section className="w-full h-[95vh] flex flex-col justify-center items-center">
+        <div className='w-[40vw] flex flex-col gap-4 justify-center items-center'>
+          <PrettyString str={profile.name} />
+          <ScrollingWords className="text-xl italic font-bold text-black/30" words={profile.adjectives!} speed={25} />
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+      </section>
+
+      <section className="space-y-2" id="projects">
+        <h1 className="text-3xl font-bold">Projects</h1>
+        <p className="text-muted-foreground">Recent work and case studies</p>
+      </section>
+
+      <ProjectSearch projects={projects} />
+
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {projects.map(p => (
+          <Card key={p._id} className="overflow-hidden">
+            <CardContent className="p-0">
+              {p.heroImage && (
+                <Image
+                  src={urlFor(p.heroImage).width(1200).height(800).fit('crop').url()}
+                  alt={p.title}
+                  width={1200}
+                  height={800}
+                  className="h-48 w-full object-cover"
+                  priority={false}
+                />
+              )}
+              <div className="p-4 space-y-2">
+                <h2 className="font-semibold">{p.title}</h2>
+                {p.excerpt && <p className="text-sm text-muted-foreground line-clamp-2">{p.excerpt}</p>}
+                {p.tech?.length ? (
+                  <div className="flex flex-wrap gap-2">
+                    {p.tech.map(t => <span key={t} className="text-xs bg-muted px-2 py-1 rounded">{t}</span>)}
+                  </div>
+                ) : null}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <ContactForm />
+    </main>
+  )
 }
