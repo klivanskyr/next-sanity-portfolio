@@ -15,7 +15,7 @@ export const revalidate = 300; // ISR every 5 min
 type Project = {
   _id: string
   title: string
-  desciption?: string
+  description?: string
   image?: any
   url: string
   github?: string
@@ -79,7 +79,7 @@ export type ProjectWithTechNames = Project & { tech?: string[] }
 
 async function getProjects(): Promise<Project[]> {
   const q = groq`*[_type == "project"]|order(publishedAt desc){
-    _id, title, slug, excerpt, heroImage, tech, publishedAt
+    _id, title, description, "image": image.asset->url, url, github, featured, technologies
   }`
   // tag: 'projects' lets us trigger revalidateTag('projects') from a webhook
   return sanityClient.fetch(q, {}, {next: {tags: ['projects']}})
@@ -113,12 +113,12 @@ async function getProfile(): Promise<Profile> {
   return sanityClient.fetch(q, {}, {next: {tags: ['profile']}})
 }
 
-// async function getTechnologies(): Promise<Technology[]> {
-//   const q = groq`*[_type == "technology"]{
-//     _id, name, icon
-//   }`
-//   return sanityClient.fetch(q, {}, {next: {tags: ['technologies']}})
-// }
+async function getTechnologies(): Promise<Technology[]> {
+  const q = groq`*[_type == "technology"]{
+    _id, name, icon
+  }`
+  return sanityClient.fetch(q, {}, {next: {tags: ['technologies']}})
+}
 
 // async function getProjectsWithTech(): Promise<ProjectWithTechNames[]> {
 //   const projects = await getProjects()
@@ -130,9 +130,24 @@ async function getProfile(): Promise<Profile> {
 //   }))
 // }
 
+async function getProjectsWithTech(): Promise<ProjectWithTechNames[]> {
+  const q = groq`*[_type == "project"]|order(publishedAt desc){
+    _id, title, description, "image": image.asset->url, url, github, featured,
+    technologies[]->{
+      _id, name
+    }
+  }`
+
+  const projects = await sanityClient.fetch(q, {}, {next: {tags: ['projects']}})
+  return projects.map((p: any) => ({
+    ...p,
+    tech: p.technologies?.map((t: Technology) => t.name).filter(Boolean) as string[] | undefined,
+  }))
+}
+
 export default async function Home() {
-  const projects = await getProjects()
   const profile = await getProfile()
+  const projectsWithTech = await getProjectsWithTech();
 
   return (
     <main className="container mx-auto px-4 py-10 space-y-8">
@@ -144,7 +159,7 @@ export default async function Home() {
       </section>
 
       <section className="container mx-auto px-4 py-10 space-y-6">
-        <AllProjects baseProjects={projects} />
+        <AllProjects baseProjects={projectsWithTech} />
       </section>
 
       <section className="container mx-auto px-4 py-10 space-y-6">

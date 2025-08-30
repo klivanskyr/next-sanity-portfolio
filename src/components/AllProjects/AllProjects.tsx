@@ -6,6 +6,8 @@ import { Input } from "../ui/input";
 import { LayoutGridIcon, Rows3Icon } from "lucide-react";
 import { motion } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import Image from "next/image";
 
 type ViewMode = 'grid' | 'list';
 
@@ -26,10 +28,11 @@ export default function AllProjects({baseProjects}: {baseProjects: ProjectWithTe
         const filtered = baseProjects.filter(
             p => 
                 p.title.toLowerCase().includes(q) || 
-                (p.desciption && p.desciption.toLowerCase().includes(q)) || 
+                (p.description && p.description.toLowerCase().includes(q)) || 
                 (p.tech && p.tech.some(t => t.toLowerCase().includes(q)))
         );
         setShownProjects(filtered);
+        console.log('Filtered projects:', filtered);
     }, [query, baseProjects]);
 
     return (
@@ -43,7 +46,7 @@ export default function AllProjects({baseProjects}: {baseProjects: ProjectWithTe
                     onChange={e => setQuery(e.target.value)}
                     className="w-full max-w-md mb-4"
                 />
-                <div className="absolute right-0">
+                <div className="absolute top-0 right-0">
                     <ModeSwitch mode={viewMode} setMode={setViewMode} />
                 </div>
             </div>
@@ -52,39 +55,67 @@ export default function AllProjects({baseProjects}: {baseProjects: ProjectWithTe
                 {viewMode === 'grid' ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                         {shownProjects.map((project) => (
-                            <div
+                            <Card
                                 key={project._id}
-                                className="bg-card rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer p-4 flex flex-col gap-2 border border-border hover:border-primary"
+                                className="hover:shadow-lg transition-shadow cursor-pointer border hover:border-primary"
                                 onClick={() => { setSelectedProject(project); setOpenDialog(true); }}
                             >
-                                <h2 className="text-xl font-semibold">{project.title}</h2>
-                                <p className="text-muted-foreground line-clamp-2">{project.desciption}</p>
-                                <div className="flex flex-wrap gap-1 mt-2">
+                                <CardHeader>
+                                    {project.image && (
+                                        <div className="mb-2">
+                                            <Image
+                                                src={project.image}
+                                                alt={project.title}
+                                                width={600}
+                                                height={400}
+                                                className="rounded"
+                                            />
+                                        </div>
+                                    )}
+                                    <CardTitle className="text-xl">{project.title}</CardTitle>
+                                    <CardDescription className="line-clamp-2">{project.description}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="h-full" />
+                                <CardFooter className="flex flex-wrap gap-1 mt-2">
                                     {project.tech?.map((t) => (
                                         <span key={t} className="bg-muted px-2 py-0.5 rounded text-xs">{t}</span>
                                     ))}
-                                </div>
-                            </div>
+                                </CardFooter>
+                            </Card>
                         ))}
                     </div>
                 ) : (
                     <div className="flex flex-col gap-4">
                         {shownProjects.map((project) => (
-                            <div
+                            <Card
                                 key={project._id}
-                                className="bg-card rounded-lg shadow hover:shadow-lg transition-shadow cursor-pointer p-4 flex flex-row items-center gap-4 border border-border hover:border-primary"
+                                className="hover:shadow-lg transition-shadow cursor-pointer border hover:border-primary flex flex-row items-center gap-4 p-8"
                                 onClick={() => { setSelectedProject(project); setOpenDialog(true); }}
                             >
                                 <div className="flex-1">
-                                    <h2 className="text-lg font-semibold">{project.title}</h2>
-                                    <p className="text-muted-foreground line-clamp-1">{project.desciption}</p>
+                                    <CardHeader className="p-0">
+                                        {project.image && (
+                                            <div className="mb-2">
+                                                <Image
+                                                    src={project.image}
+                                                    alt={project.title}
+                                                    width={600}
+                                                    height={400}
+                                                    className="rounded"
+                                                />
+                                            </div>
+                                        )}
+                                        <CardTitle className="text-lg">{project.title}</CardTitle>
+                                        <CardDescription className="line-clamp-1">{project.description}</CardDescription>
+                                    </CardHeader>
                                 </div>
-                                <div className="flex flex-wrap gap-1">
+                                <CardContent className="flex-1" />
+                                <CardFooter className="flex flex-wrap gap-1">
                                     {project.tech?.map((t) => (
                                         <span key={t} className="bg-muted px-2 py-0.5 rounded text-xs">{t}</span>
                                     ))}
-                                </div>
-                            </div>
+                                </CardFooter>
+                            </Card>
                         ))}
                     </div>
                 )}
@@ -97,9 +128,9 @@ export default function AllProjects({baseProjects}: {baseProjects: ProjectWithTe
                             <DialogHeader>
                                 <DialogTitle>{selectedProject.title}</DialogTitle>
                                 <DialogDescription>
-                                    <div className="mt-2 text-base text-foreground">
-                                        {selectedProject.desciption}
-                                    </div>
+                                    <span className="mt-2 text-base text-foreground block">
+                                        {selectedProject.description}
+                                    </span>
                                 </DialogDescription>
                             </DialogHeader>
                             <div className="mt-4">
