@@ -8,6 +8,7 @@ import ContactForm from '@/components/ContactForm'
 import {Card, CardContent} from '@/components/ui/card'
 import PrettyString from '@/components/PrettyString'
 import ScrollingWords from '@/components/ScrollingWords'
+import AllProjects from '@/components/AllProjects/AllProjects'
 
 export const revalidate = 300; // ISR every 5 min
 
@@ -74,7 +75,7 @@ type Technology = {
   icon?: any
 }
 
-type ProjectWithTechNames = Project & { tech?: string[] }
+export type ProjectWithTechNames = Project & { tech?: string[] }
 
 async function getProjects(): Promise<Project[]> {
   const q = groq`*[_type == "project"]|order(publishedAt desc){
@@ -142,42 +143,13 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="space-y-2" id="projects">
-        <h1 className="text-3xl font-bold">Projects</h1>
-        <p className="text-muted-foreground">Recent work and case studies</p>
+      <section className="container mx-auto px-4 py-10 space-y-6">
+        <AllProjects baseProjects={projects} />
       </section>
 
-      <ProjectSearch projects={projects} />
-
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {projects.map(p => (
-          <Card key={p._id} className="overflow-hidden">
-            <CardContent className="p-0">
-              {p.heroImage && (
-                <Image
-                  src={urlFor(p.heroImage).width(1200).height(800).fit('crop').url()}
-                  alt={p.title}
-                  width={1200}
-                  height={800}
-                  className="h-48 w-full object-cover"
-                  priority={false}
-                />
-              )}
-              <div className="p-4 space-y-2">
-                <h2 className="font-semibold">{p.title}</h2>
-                {p.excerpt && <p className="text-sm text-muted-foreground line-clamp-2">{p.excerpt}</p>}
-                {p.tech?.length ? (
-                  <div className="flex flex-wrap gap-2">
-                    {p.tech.map(t => <span key={t} className="text-xs bg-muted px-2 py-1 rounded">{t}</span>)}
-                  </div>
-                ) : null}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <ContactForm />
+      <section className="container mx-auto px-4 py-10 space-y-6">
+        <ContactForm />
+      </section>
     </main>
   )
 }

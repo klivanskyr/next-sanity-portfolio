@@ -50,8 +50,11 @@ export default function Navbar() {
                 sideOffset={8}
                 forceMount
               >
-                  <DropdownMenuItem asChild>
+                  {/* <DropdownMenuItem asChild>
                     <Link href="#feature" className="block w-full px-4 py-2 rounded transition-colors duration-200 hover:bg-accent/30 focus:bg-accent/30">Feature</Link>
+                  </DropdownMenuItem> */}
+                  <DropdownMenuItem asChild>
+                    <Link href="#projects" className="block w-full px-4 py-2 rounded transition-colors duration-200 hover:bg-accent/30 focus:bg-accent/30">Projects</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
                     <Link href="#experience" className="block w-full px-4 py-2 rounded transition-colors duration-200 hover:bg-accent/30 focus:bg-accent/30">Experience</Link>
@@ -62,9 +65,9 @@ export default function Navbar() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <Button asChild variant="ghost" className="px-4 py-2 min-w-[120px]">
+          {/* <Button asChild variant="ghost" className="px-4 py-2 min-w-[120px]">
             <a href="#projects">Projects</a>
-          </Button>
+          </Button> */}
         </div>
       </nav>
       <div
@@ -90,7 +93,7 @@ export default function Navbar() {
             forceMount
           >
               <DropdownMenuItem asChild>
-                <Link href="#feature" className="block w-full px-4 py-2 rounded transition-colors duration-200 hover:bg-accent/30 focus:bg-accent/30">Feature</Link>
+                <Link href="#projects" className="block w-full px-4 py-2 rounded transition-colors duration-200 hover:bg-accent/30 focus:bg-accent/30">Projects</Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="#experience" className="block w-full px-4 py-2 rounded transition-colors duration-200 hover:bg-accent/30 focus:bg-accent/30">Experience</Link>
@@ -100,9 +103,9 @@ export default function Navbar() {
               </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button asChild variant="ghost" className="px-4 py-2 min-w-[100px]">
+        {/* <Button asChild variant="ghost" className="px-4 py-2 min-w-[100px]">
           <a href="#projects">Projects</a>
-        </Button>
+        </Button> */}
       </div>
     </>
   );
